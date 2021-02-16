@@ -11,6 +11,7 @@ namespace xRetry.SpecFlow
         bool Global { get; set; }
         int MaxRetry { get; set; }
         int DelayBetweenRetriesMs { get; set; }
+         int[] DelayBetweenEachRetriesMs { get; set; }
     }
 
     public class RetrySettings : IRetrySettings
@@ -20,6 +21,8 @@ namespace xRetry.SpecFlow
         public int MaxRetry { get; set; } = 3;
         public int DelayBetweenRetriesMs { get; set; } = 5000;
 
+        public int[] DelayBetweenEachRetriesMs { get; set; } = new[] {1000, 3000, 5000, 10000};
+        
         public static RetrySettings LoadConfiguration()
         {
             var retrySettings = new RetrySettings();

@@ -77,13 +77,31 @@ namespace xRetry.SpecFlow
                 }
             }
 
-            testMethod.CustomAttributes.Add(
-                new CodeAttributeDeclaration(
-                    tagToAdd,
+            CodeAttributeArgument[] codeAttributeArguments;
+            if (retrySettings.DelayBetweenEachRetriesMs.Any())
+            {
+                var codeExpressions = retrySettings.DelayBetweenEachRetriesMs
+                    .Select(i => new CodePrimitiveExpression(i))
+                    .ToArray();
+
+                codeAttributeArguments = new[]
+                {
+                    new CodeAttributeArgument(
+                        new CodeArrayCreateExpression(
+                            retrySettings.DelayBetweenEachRetriesMs.GetType(),
+                            codeExpressions))
+                };
+            }
+            else
+            {
+                codeAttributeArguments = new[]
+                {
                     new CodeAttributeArgument(new CodePrimitiveExpression(retrySettings.MaxRetry)),
                     new CodeAttributeArgument(new CodePrimitiveExpression(retrySettings.DelayBetweenRetriesMs))
-                )
-            );
+                };
+            }
+
+            testMethod.CustomAttributes.Add(new CodeAttributeDeclaration(tagToAdd, codeAttributeArguments));
         }
     }
 }

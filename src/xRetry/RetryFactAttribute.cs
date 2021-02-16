@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using Xunit;
 using Xunit.Sdk;
 
@@ -14,6 +15,7 @@ namespace xRetry
     {
         public readonly int MaxRetries;
         public readonly int DelayBetweenRetriesMs;
+        public int[] DelayBetweenEachRetriesMs { get; set; }
 
         /// <summary>
         /// Ctor
@@ -33,6 +35,22 @@ namespace xRetry
 
             MaxRetries = maxRetries;
             DelayBetweenRetriesMs = delayBetweenRetriesMs;
-        }
+        } 
+        
+        public RetryFactAttribute(int[] delayBetweenEachRetriesMs)
+        {
+            if (delayBetweenEachRetriesMs.Length < 1)
+            {
+                throw new ArgumentOutOfRangeException(nameof(delayBetweenEachRetriesMs), "The array must contains at least 1 element");
+            }
+            
+            if (delayBetweenEachRetriesMs.Any(i => i < 100))
+            {
+                throw new ArgumentOutOfRangeException(nameof(delayBetweenEachRetriesMs), "Any value in the table must be >= 100 miliseconds");
+            }
+
+            MaxRetries = delayBetweenEachRetriesMs.Length;
+            DelayBetweenRetriesMs = delayBetweenEachRetriesMs[0];
+        }  
     }
 }

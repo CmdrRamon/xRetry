@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit.Abstractions;
@@ -55,11 +56,17 @@ namespace xRetry
                         testCase.MaxRetries));
 
                     // If there is a delay between test attempts, apply it now
-                    if (testCase.DelayBetweenRetriesMs > 0)
+                    int timeToWait = testCase.DelayBetweenRetriesMs;
+                    if (testCase.DelayBetweenEachRetriesMs.Any())
+                    {
+                        timeToWait = testCase.DelayBetweenEachRetriesMs[i-1];
+                    }
+                    
+                    if (timeToWait > 0)
                     {
                         diagnosticMessageSink.OnMessage(new DiagnosticMessage(
                             "Test \"{0}\" attempt ({1}/{2}) delayed by {3}ms. Waiting . . .", testCase.DisplayName, i,
-                            testCase.MaxRetries, testCase.DelayBetweenRetriesMs));
+                            testCase.MaxRetries, timeToWait));
 
                         // Don't await to prevent thread hopping.
                         //  If all of a users test cases in a collection/class are synchronous and expecting to not thread-hop
@@ -67,7 +74,7 @@ namespace xRetry
                         //  a more modern async-friendly mechanism) then if a thread-hop were to happen here we'd get flickering tests.
                         //  SpecFlow relies on this as they use the managed thread ID to separate instances of some of their internal classes, which caused
                         //  a this problem for xRetry.SpecFlow: https://github.com/JoshKeegan/xRetry/issues/18
-                        Task.Delay(testCase.DelayBetweenRetriesMs, cancellationTokenSource.Token).Wait();
+                        Task.Delay(timeToWait, cancellationTokenSource.Token).Wait();
                     }
                 }
             }

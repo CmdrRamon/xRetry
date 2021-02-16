@@ -12,6 +12,7 @@ namespace xRetry
     {
         public int MaxRetries { get; private set; }
         public int DelayBetweenRetriesMs { get; private set; }
+        public int[] DelayBetweenEachRetriesMs { get; private set; }
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         [Obsolete(
@@ -32,6 +33,21 @@ namespace xRetry
             MaxRetries = maxRetries;
             DelayBetweenRetriesMs = delayBetweenRetriesMs;
         }
+        
+        public RetryTestCase(
+            IMessageSink diagnosticMessageSink,
+            TestMethodDisplay defaultMethodDisplay,
+            TestMethodDisplayOptions defaultMethodDisplayOptions,
+            ITestMethod testMethod,
+            int[] delayBetweenEachRetriesMs,
+            object[] testMethodArguments = null)
+            : base(diagnosticMessageSink, defaultMethodDisplay, defaultMethodDisplayOptions, testMethod,
+                testMethodArguments)
+        {
+            DelayBetweenEachRetriesMs = delayBetweenEachRetriesMs;
+            MaxRetries = delayBetweenEachRetriesMs.Length;
+            DelayBetweenRetriesMs = delayBetweenEachRetriesMs[0];
+        }
 
         public override Task<RunSummary> RunAsync(IMessageSink diagnosticMessageSink, IMessageBus messageBus,
             object[] constructorArguments, ExceptionAggregator aggregator,
@@ -47,6 +63,7 @@ namespace xRetry
 
             data.AddValue("MaxRetries", MaxRetries);
             data.AddValue("DelayBetweenRetriesMs", DelayBetweenRetriesMs);
+            data.AddValue("DelayBetweenEachRetriesMs", DelayBetweenEachRetriesMs);
         }
 
         public override void Deserialize(IXunitSerializationInfo data)
@@ -55,6 +72,7 @@ namespace xRetry
 
             MaxRetries = data.GetValue<int>("MaxRetries");
             DelayBetweenRetriesMs = data.GetValue<int>("DelayBetweenRetriesMs");
+            DelayBetweenEachRetriesMs = data.GetValue<int[]>("DelayBetweenEachRetriesMs");
         }
     }
 }
